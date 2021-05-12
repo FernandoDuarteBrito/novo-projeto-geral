@@ -27,167 +27,76 @@ keys = ('SBase', 'Buses', 'PriBuses', 'Branches', 'Phases', 'BranchPhase', 'BusP
         'Gsource', 'Bsource', 'Sourcebusphase', 'Pinjinit')
 
 dictionary_ = {}
-dictionary_[keys[0]] = 1.0
-dictionary_[keys[1]] = dss.circuit_allbusnames()
+SBase = 1.0
+Buses = dss.circuit_allbusnames()
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
-h = dss.circuit_allbusnames()
-i = 0
-f1 = list()
-f2 = list()
-while i <= len(dss.circuit_allbusnames()) - 1:
-    dss.circuit_setactivebus(h[i])
+raiz_de_3 = math.sqrt(3)
+
+PriBuses = []  # list()
+for bus in Buses:
+    dss.circuit_setactivebus(bus)
     Vln = dss.bus_vmagangle()
-    Vll = 1.73205 * dss.bus_vmagangle()[0]  # VLL = raiz3. VLN
-    if (1.73205 * abs(dss.bus_vmagangle()[0])) >= 1000:
+    Vll = raiz_de_3 * abs(Vln[0])  # VLL = raiz3. VLN
+    if Vll >= 1000:
+        PriBuses.append(dss.bus_name())
+# ______________________________________________________________________________________________
+# ______________________________________________________________________________________________
+# ______________________________________________________________________________________________
+# ______________________________________________________________________________________________
+Branches = set()  # conjunto
 
-        f1.append(dss.bus_name())
-    else:
-        f2.append(dss.bus_name())
-    i += 1
-dictionary_[keys[2]] = f1
-# ______________________________________________________________________________________________
-# ______________________________________________________________________________________________
-# ______________________________________________________________________________________________
-# ______________________________________________________________________________________________
-d = list()
-i_ = 0
-while i_ <= len(dss.lines_allnames()) - 1:
+for line_name in dss.lines_allnames():
     dss.circuit_setactiveclass('Line')
-    dss.lines_write_name(dss.lines_allnames()[i_])
-    d.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-              (''.join(x for x in dss.lines_read_bus2() if x.isalpha()))))
-    i_ += 1
-i_ = 0
-while i_ <= len(dss.lines_allnames()) - 1:
-    dss.circuit_setactiveclass('Line')
-    dss.lines_write_name(dss.lines_allnames()[i_])
-    d.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-              (''.join(x for x in dss.lines_read_bus1() if x.isalpha()))))
-    i_ += 1
-i_ = 0
+    dss.lines_write_name(line_name)
+    nome_barramento_1 = ''.join(x for x in dss.lines_read_bus1() if x.isalpha())
+    nome_barramento_2 = ''.join(x for x in dss.lines_read_bus2() if x.isalpha())
+    Branches.update((nome_barramento_1, nome_barramento_2))
+    Branches.update((nome_barramento_2, nome_barramento_1))
 
-while i_ <= len(dss.transformers_allNames()) - 1:
+for transform_name in dss.transformers_allNames():
     dss.circuit_setactiveclass('Transformer')
-    dss.transformers_write_name(dss.transformers_allNames()[i_])
-    d.append(dss.cktelement_read_busnames())
-    d.append((dss.cktelement_read_busnames()[1], dss.cktelement_read_busnames()[0]))
-    i_ += 1
-dictionary_[keys[3]] = d
+    dss.transformers_write_name(transform_name)
+    nome_1, nome_2, *_ = dss.cktelement_read_busnames()
+    Branches.update((nome_1, nome_2))
+    Branches.update((nome_2, nome_1))
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
-dictionary_[keys[4]] = ['1', '2', '3']
+Phases = ['1', '2', '3']
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
-b_ = list()
-i_ = 0
-while i_ <= len(dss.lines_allnames()) - 1:
+BranchPhase = set()  # conjunto
+for line_name in dss.lines_allnames():
     dss.circuit_setactiveclass('Line')
-    dss.lines_write_name(dss.lines_allnames()[i_])
+    dss.lines_write_name(line_name)
     bus1 = dss.lines_read_bus1().split('.')
-    if len(dss.lines_read_bus1()) == 1:
-        # sentido ij
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '1'))
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '2'))
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '3'))
-        # sentido ji
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '1'))
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '2'))
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '3'))
+    nome_barramento_1 = ''.join(x for x in dss.lines_read_bus1() if x.isalpha())
+    nome_barramento_2 = ''.join(x for x in dss.lines_read_bus2() if x.isalpha())
 
-    elif len(dss.lines_read_bus1()) == 9:  # to bus NEWSOURCE
-        # sentido ij
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '1'))
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '2'))
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '3'))
-        # sentido ji
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '1'))
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '2'))
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '3'))
-    elif len(bus1) == 3 and (re.findall('1' + '+', dss.lines_read_bus1())) and (
-            re.findall('2' + '+', dss.lines_read_bus1())):
-        # sentido ij
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '1'))
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '2'))
-        # sentido ji
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '1'))
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '2'))
+    if len(bus1) == 1:  # é o próprio nome da barra
+        for phase in Phases:
+            BranchPhase.update((nome_barramento_1, nome_barramento_2, phase))
+            BranchPhase.update((nome_barramento_2, nome_barramento_1, phase))
+    else:  # nome da barra + fase(s)
+        _, *outros = bus1
+        for outro in outros:
+            BranchPhase.update((nome_barramento_1, nome_barramento_2, outro))
+            BranchPhase.update((nome_barramento_2, nome_barramento_1, outro))
 
-    elif len(bus1) == 3 and (re.findall('2' + '+', dss.lines_read_bus1())) and (
-            re.findall('3' + '+', dss.lines_read_bus1())):
-        # sentido ij
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '2'))
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '3'))
-        # sentido ji
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '2'))
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '3'))
-
-    elif len(bus1) == 2 and (re.findall('1' + '+', dss.lines_read_bus1())):
-        # sentido ij
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '1'))
-        # sentido ji
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '1'))
-
-    elif len(bus1) == 2 and (re.findall('2' + '+', dss.lines_read_bus1())):
-        # sentido ij
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '2'))
-        # sentido ji
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '2'))
-
-    elif len(bus1) == 2 and (re.findall('3' + '+', dss.lines_read_bus1())):
-        # sentido ij
-        b_.append(((''.join(x for x in dss.lines_read_bus1() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus2() if x.isalpha())), '3'))
-        # sentido ji
-        b_.append(((''.join(x for x in dss.lines_read_bus2() if x.isalpha())),
-                   (''.join(x for x in dss.lines_read_bus1() if x.isalpha())), '3'))
-    i_ += 1
-
-i_ = 0
-while i_ <= len(dss.transformers_allNames()) - 1:
+for transform_name in dss.transformers_allNames():
     dss.circuit_setactiveclass('Transformer')
-    dss.transformers_write_name(dss.transformers_allNames()[i_])
-    busnames = dss.cktelement_read_busnames()
-    # sentido ij
-    b_.append((busnames[0], busnames[1], '1'))
-    b_.append((busnames[0], busnames[1], '2'))
-    b_.append((busnames[0], busnames[1], '3'))
-    # sentido ji
-    b_.append((busnames[1], busnames[0], '1'))
-    b_.append((busnames[1], busnames[0], '2'))
-    b_.append((busnames[1], busnames[0], '3'))
-    i_ += 1
-dictionary_[keys[5]] = b_
+    dss.transformers_write_name(transform_name)
+    nome_1, nome_2, *_ = dss.cktelement_read_busnames()
+    for phase in Phases:
+        BranchPhase.update((nome_1, nome_2, phase))
+        BranchPhase.update((nome_2, nome_1, phase))
+
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________

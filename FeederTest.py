@@ -105,21 +105,11 @@ for transform_name in dss.transformers_allNames():
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # 'BusPhase'
-i = 0
-f = list()
-while i <= len(dss.circuit_allbusnames()) - 1:
-    dss.circuit_setactivebus(dss.circuit_allbusnames()[i])
-    if len(dss.bus_nodes()) == 1:
-        f.append((dss.bus_name(), str(dss.bus_nodes()[0])))
-    elif len(dss.bus_nodes()) == 2:
-        f.append((dss.bus_name(), str(dss.bus_nodes()[0])))
-        f.append((dss.bus_name(), str(dss.bus_nodes()[1])))
-    elif len(dss.bus_nodes()) == 3:
-        f.append((dss.bus_name(), str(dss.bus_nodes()[0])))
-        f.append((dss.bus_name(), str(dss.bus_nodes()[1])))
-        f.append((dss.bus_name(), str(dss.bus_nodes()[2])))
-    i += 1
-dictionary_[keys[6]] = f
+BusPhase = []  # list()
+for busname in dss.circuit_allbusnames():
+    dss.circuit_setactivebus(busname)
+    for node in dss.bus_nodes():
+        BusPhase.append((dss.bus_name(), str(node)))
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________

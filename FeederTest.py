@@ -146,17 +146,15 @@ if dss.pvsystems_allnames()[0] != 'NONE':
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
-r = list()
-i = 0
+# no código original o cálculo de CapBus e CapBusCont estava igual
+# mantendo para fins de refatoração
+# TODO: verificar o cálculo de verdade
+CapBusCont = []  # list()
 if dss.capacitors_allnames()[0] != 'NONE':
-    while i <= len(dss.capacitors_allnames()) - 1:
-        dss.circuit_setactiveclass('Capacitor')
-        dss.capacitors_write_name(dss.capacitors_allnames()[i])
-        r.append((dss.cktelement_read_busnames()[0])[0])
-        i += 1
-else:
-    pass
-dictionary_[keys[11]] = r
+    dss.circuit_setactiveclass('Capacitor')
+    for capacitor_name in dss.capacitors_allnames():
+        dss.capacitors_write_name(capacitor_name)
+        CapBusCont.append((dss.cktelement_read_busnames()[0])[0])
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________

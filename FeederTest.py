@@ -130,6 +130,7 @@ CapBus = []  # list()
 if dss.capacitors_allnames()[0] != 'NONE':
     dss.circuit_setactiveclass('Capacitor')
     for capacitor_name in dss.capacitors_allnames():
+        dss.capacitors_write_name(capacitor_name)
         CapBus.append((dss.cktelement_read_busnames()[0])[0])
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________

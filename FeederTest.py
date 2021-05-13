@@ -79,11 +79,14 @@ for line_name in dss.lines_allnames():
     nome_barramento_1 = ''.join(x for x in dss.lines_read_bus1() if x.isalpha())
     nome_barramento_2 = ''.join(x for x in dss.lines_read_bus2() if x.isalpha())
 
-    if len(bus1) == 1:  # é o próprio nome da barra
+    if len(bus1) == 1:  # é o próprio nome da barra, exemplo: 'A'
         for phase in Phases:
             BranchPhase.update((nome_barramento_1, nome_barramento_2, phase))
             BranchPhase.update((nome_barramento_2, nome_barramento_1, phase))
-    else:  # nome da barra + fase(s)
+    else:
+        # nome da barra + fase(s)
+        # exemplo: 'A.1' -> outros = ['1']
+        #          'A.2.3' -> outros = ['2', '3']
         _, *outros = bus1
         for outro in outros:
             BranchPhase.update((nome_barramento_1, nome_barramento_2, outro))

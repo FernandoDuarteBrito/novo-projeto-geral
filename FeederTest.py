@@ -126,17 +126,11 @@ DSSSourceBus = dss.bus_name()
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
-s = list()
-i = 0
+CapBus = []  # list()
 if dss.capacitors_allnames()[0] != 'NONE':
-    while i <= len(dss.capacitors_allnames()) - 1:
-        dss.circuit_setactiveclass('Capacitor')
-        dss.capacitors_write_name(dss.capacitors_allnames()[i])
-        s.append((dss.cktelement_read_busnames()[0])[0])
-        i += 1
-else:
-    pass
-dictionary_[keys[9]] = s
+    dss.circuit_setactiveclass('Capacitor')
+    for capacitor_name in dss.capacitors_allnames():
+        CapBus.append((dss.cktelement_read_busnames()[0])[0])
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________

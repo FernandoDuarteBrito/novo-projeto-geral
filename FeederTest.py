@@ -136,17 +136,12 @@ if dss.capacitors_allnames()[0] != 'NONE':
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
-v = list()
-i = 0
+PVBus = []  # list()
 if dss.pvsystems_allnames()[0] != 'NONE':
-    while i <= len(dss.pvsystems_allnames()) - 1:
-        dss.circuit_setactiveclass('PVSystem')
-        dss.pvsystems_write_name(dss.pvsystems_allnames()[i])
-        v.append(dss.cktelement_read_busnames()[0])
-        i += 1
-else:
-    pass
-dictionary_[keys[10]] = v
+    dss.circuit_setactiveclass('PVSystem')
+    for pvsystem_name in dss.pvsystems_allnames():
+        dss.pvsystems_write_name(pvsystem_name)
+        PVBus.append(dss.cktelement_read_busnames()[0])
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________

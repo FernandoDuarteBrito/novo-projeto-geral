@@ -2502,20 +2502,20 @@ dictionary_[keys[37]] = _Pinjinit_
 model = pyo.ConcreteModel()
 # ___SETs___ 00:00 ~ 0:50 - (áudio 21.02.21)
 # Barras
-model.bus = pyo.Set(initialize=dictionary_['Buses'], ordered=True)
+model.bus = pyo.Set(initialize=Buses, ordered=True)
 # Phases
-model.Phases = pyo.Set(initialize=dictionary_['Phases'], ordered=True)
+model.Phases = pyo.Set(initialize=Phases, ordered=True)
 
 # Branch_domain
 model.Branch_domain = pyo.Set(initialize=model.bus * model.bus, within=model.bus * model.bus, ordered=True)
 # Seguimentos (Branches)
-model.branches = pyo.Set(initialize=dictionary_['Branches'], domain=model.Branch_domain, ordered=True)
+model.branches = pyo.Set(initialize=Branches, domain=model.Branch_domain, ordered=True)
 
 # BranchPhase_domain
 model.BranchPhase_domain = pyo.Set(initialize=model.branches * model.Phases, within=model.branches * model.Phases,
                                    ordered=True)
 # BranchPhase
-model.BranchPhase = pyo.Set(initialize=dictionary_['BranchPhase'], within=model.BranchPhase_domain, ordered=True)
+model.BranchPhase = pyo.Set(initialize=BranchPhase, within=model.BranchPhase_domain, ordered=True)
 
 # BusPhase_domain
 model.BusPhase_domain = pyo.Set(initialize=model.bus * model.Phases, within=model.bus * model.Phases, ordered=True)

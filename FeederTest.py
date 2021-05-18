@@ -53,20 +53,23 @@ for line_name in dss.lines_allnames():
     dss.lines_write_name(line_name)
     nome_barramento_1 = ''.join(x for x in dss.lines_read_bus1() if x.isalpha())
     nome_barramento_2 = ''.join(x for x in dss.lines_read_bus2() if x.isalpha())
-    Branches.update((nome_barramento_1, nome_barramento_2))
-    Branches.update((nome_barramento_2, nome_barramento_1))
+    Branches.add((nome_barramento_1, nome_barramento_2))
+    Branches.add((nome_barramento_2, nome_barramento_1))
 
 for transform_name in dss.transformers_allNames():
     dss.circuit_setactiveclass('Transformer')
     dss.transformers_write_name(transform_name)
     nome_1, nome_2, *_ = dss.cktelement_read_busnames()
-    Branches.update((nome_1, nome_2))
-    Branches.update((nome_2, nome_1))
+    Branches.add((nome_1, nome_2))
+    Branches.add((nome_2, nome_1))
+
+
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 Phases = ['1', '2', '3']
+
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
@@ -78,28 +81,30 @@ for line_name in dss.lines_allnames():
     bus1 = dss.lines_read_bus1().split('.')
     nome_barramento_1 = ''.join(x for x in dss.lines_read_bus1() if x.isalpha())
     nome_barramento_2 = ''.join(x for x in dss.lines_read_bus2() if x.isalpha())
+    print(nome_barramento_2)
 
     if len(bus1) == 1:  # é o próprio nome da barra, exemplo: 'A'
         for phase in Phases:
-            BranchPhase.update((nome_barramento_1, nome_barramento_2, phase))
-            BranchPhase.update((nome_barramento_2, nome_barramento_1, phase))
+            BranchPhase.add((nome_barramento_1, nome_barramento_2, phase))
+            BranchPhase.add((nome_barramento_2, nome_barramento_1, phase))
     else:
         # nome da barra + fase(s)
         # exemplo: 'A.1' -> outros = ['1']
         #          'A.2.3' -> outros = ['2', '3']
         _, *outros = bus1
         for outro in outros:
-            BranchPhase.update((nome_barramento_1, nome_barramento_2, outro))
-            BranchPhase.update((nome_barramento_2, nome_barramento_1, outro))
+            BranchPhase.add((nome_barramento_1, nome_barramento_2, outro))
+            BranchPhase.add((nome_barramento_2, nome_barramento_1, outro))
 
 for transform_name in dss.transformers_allNames():
     dss.circuit_setactiveclass('Transformer')
     dss.transformers_write_name(transform_name)
     nome_1, nome_2, *_ = dss.cktelement_read_busnames()
     for phase in Phases:
-        BranchPhase.update((nome_1, nome_2, phase))
-        BranchPhase.update((nome_2, nome_1, phase))
+        BranchPhase.add((nome_1, nome_2, phase))
+        BranchPhase.add((nome_2, nome_1, phase))
 
+print(BranchPhase)
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
@@ -2503,32 +2508,37 @@ model = pyo.ConcreteModel()
 # ___SETs___ 00:00 ~ 0:50 - (áudio 21.02.21)
 # Barras
 model.bus = pyo.Set(initialize=Buses, ordered=True)
+model.bus.pprint()
 # Phases
 model.Phases = pyo.Set(initialize=Phases, ordered=True)
-
+model.Phases.pprint()
 # Branch_domain
 model.Branch_domain = pyo.Set(initialize=model.bus * model.bus, within=model.bus * model.bus, ordered=True)
+model.Branch_domain.pprint()
 # Seguimentos (Branches)
 model.branches = pyo.Set(initialize=Branches, domain=model.Branch_domain, ordered=True)
+model.branches.pprint()
 
 # BranchPhase_domain
 model.BranchPhase_domain = pyo.Set(initialize=model.branches * model.Phases, within=model.branches * model.Phases,
                                    ordered=True)
+model.BranchPhase_domain.pprint()
+
 # BranchPhase
 model.BranchPhase = pyo.Set(initialize=BranchPhase, within=model.BranchPhase_domain, ordered=True)
 
 # BusPhase_domain
 model.BusPhase_domain = pyo.Set(initialize=model.bus * model.Phases, within=model.bus * model.Phases, ordered=True)
 # BusPhase
-model.BusPhase = pyo.Set(initialize=dictionary_['BusPhase'], within=model.BusPhase_domain, ordered=True)
+model.BusPhase = pyo.Set(initialize=BusPhase, within=model.BusPhase_domain, ordered=True)
 
 # Barras dos capacitores
-model.CapBus = pyo.Set(initialize=dictionary_['CapBus'], within=model.bus, ordered=True)
+model.CapBus = pyo.Set(initialize=CapBus, within=model.bus, ordered=True)
 # CapBusCont
-model.CapBusCont = pyo.Set(initialize=dictionary_['CapBusCont'], within=model.CapBus, ordered=True)
+model.CapBusCont = pyo.Set(initialize=CapBusCont, within=model.CapBus, ordered=True)
 
 # DSSSourceBus
-model.DSSSourceBus = pyo.Set(initialize=dictionary_['DSSSourceBus'], within=model.bus, ordered=True)
+model.DSSSourceBus = pyo.Set(initialize=DSSSourceBus, within=model.bus, ordered=True)
 
 # G_index
 # model.G_index = pyo.Set(initialize=model.BusPhase*model.BusPhase, within=model.BusPhase*model.BusPhase, ordered=True)
@@ -2536,12 +2546,12 @@ model.DSSSourceBus = pyo.Set(initialize=dictionary_['DSSSourceBus'], within=mode
 # model.B_index = pyo.Set(initialize=model.BusPhase*model.BusPhase, within=model.BusPhase*model.BusPhase, ordered=True)
 
 # Barras de PVs
-model.PVBus = pyo.Set(initialize=dictionary_['PVBus'], within=model.bus, ordered=True)
+model.PVBus = pyo.Set(initialize=PVBus, within=model.bus, ordered=True)
 # PVBusCont
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # PriBus
-model.PriBus = pyo.Set(initialize=dictionary_['PriBuses'], within=model.bus, ordered=True)
+model.PriBus = pyo.Set(initialize=PriBuses, within=model.bus, ordered=True)
 
 # Seguimentos reguladores
 model.RegBranch = pyo.Set(initialize=dictionary_['RegBranch'], within=model.BranchPhase, ordered=True)
@@ -2552,7 +2562,7 @@ model.RegBranch = pyo.Set(initialize=dictionary_['RegBranch'], within=model.Bran
 model.RegGanged = pyo.Set(initialize=dictionary_['RegGanged'], within=model.branches, ordered=True)
 
 # SourceBus
-model.SourceBus = pyo.Set(initialize=dictionary_['SourceBus'], ordered=True)
+model.SourceBus = pyo.Set(initialize=SourceBus, ordered=True)
 # SourceVa_def_index
 model.SourceVa_def_index = pyo.Set(initialize=model.SourceBus * model.Phases, within=model.SourceBus * model.Phases,
                                    ordered=True)
@@ -2617,7 +2627,7 @@ def __define_power_flow_init(dictionary_, model):
              math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
              dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
              math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d])) / dictionary_['Tapinit'][i, j, p] for
-            d in dictionary_['Phases'] if (i, j, d) in dictionary_['BranchPhase'] and (i, p, j, d) in dictionary_['G'])
+            d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
 
             Qflowinit[i, j, p] = -sum(
                 (-dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][i, d] *
@@ -2628,7 +2638,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
                  dictionary_['G'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d])) / dictionary_['Tapinit'][i, j, p] for
-                d in dictionary_['Phases'] if (i, j, d) in dictionary_['BranchPhase'] and (i, p, j, d) in dictionary_['G'])
+                d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
 
         elif (j, i, p) in dictionary_['RegBranch']:
             Pflowinit[i, j, p] = -sum(
@@ -2641,7 +2651,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
                  dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d])) / dictionary_['Tapinit'][j, i, p] for
-                d in dictionary_['Phases'] if (i, j, d) in dictionary_['BranchPhase'] and (i, p, j, d) in dictionary_['G'])
+                d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
 
             Qflowinit[i, j, p] = -sum(
                 (-dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
@@ -2653,7 +2663,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][i, d]) -
                  dictionary_['G'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][i, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][i, d])) / dictionary_['Tapinit'][j, i, p] for
-                d in dictionary_['Phases'] if (i, j, d) in dictionary_['BranchPhase'] and (i, p, j, d) in dictionary_['G'])
+                d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
         else:
             Pflowinit[i, j, p] = -sum(
                 (dictionary_['G'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][i, d] *
@@ -2664,7 +2674,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
                  dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]))
-                for d in dictionary_['Phases'] if (i, j, d) in dictionary_['BranchPhase'] and (i, p, j, d) in dictionary_['G'])
+                for d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
 
             Qflowinit[i, j, p] = -sum(
                 (-dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][i, d] *
@@ -2675,7 +2685,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
                  dictionary_['G'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]))
-                for d in dictionary_['Phases'] if (i, j, d) in dictionary_['BranchPhase'] and (i, p, j, d) in dictionary_['G'])
+                for d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
     return Pflowinit, Qflowinit
 
 

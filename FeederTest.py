@@ -104,6 +104,7 @@ for transform_name in dss.transformers_allNames():
         BranchPhase.add((nome_1, nome_2, phase))
         BranchPhase.add((nome_2, nome_1, phase))
 
+print('BranchPhase')
 print(BranchPhase)
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
@@ -184,7 +185,8 @@ if dss.regcontrols_allnames()[0] != 'NONE':
 else:
     pass
 dictionary_[keys[12]] = u
-
+print('RegBranch')
+print(u)
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
@@ -212,12 +214,17 @@ dictionary_[keys[13]] = u_
 # ______________________________________________________________________________________________
 # ____________________G____________________
 dictionary_[keys[14]] = g
+from pprint import  pprint
+print('g')
+pprint(g)
 # # ______________________________________________________________________________________________
 # # ______________________________________________________________________________________________
 # # ______________________________________________________________________________________________
 # # ______________________________________________________________________________________________
 # # ____________________B____________________
 dictionary_[keys[15]] = b
+print('b')
+pprint(b)
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
 # ______________________________________________________________________________________________
@@ -2609,6 +2616,14 @@ model.PVPlimit = pyo.Param(model.PVBus, initialize=dictionary_['PVPlimit'])
 model.Pinj = pyo.Var(model.BusPhase, initialize=dictionary_['Pinjinit'])
 model.Qinj = pyo.Var(model.BusPhase, initialize=dictionary_['Qinjinit'])
 
+from pprint import  pprint
+print('Vminit')
+pprint(dictionary_['Vminit'])
+
+print('Vainit')
+pprint(dictionary_['Vainit'])
+
+
 
 def __define_power_flow_init(dictionary_, model):
     # Cálculo do Pflowinit e Qflowinit
@@ -2626,8 +2641,9 @@ def __define_power_flow_init(dictionary_, model):
             (-dictionary_['G'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
              math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
              dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
-             math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d])) / dictionary_['Tapinit'][i, j, p] for
-            d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
+             math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d])) / dictionary_['Tapinit'][i, j, p]
+            for d in Phases
+            if (i, j, d) in BranchPhase and ((i, p), (j, d)) in dictionary_['G'])
 
             Qflowinit[i, j, p] = -sum(
                 (-dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][i, d] *
@@ -2638,7 +2654,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
                  dictionary_['G'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d])) / dictionary_['Tapinit'][i, j, p] for
-                d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
+                d in Phases if (i, j, d) in BranchPhase and ((i, p), (j, d)) in dictionary_['G'])
 
         elif (j, i, p) in dictionary_['RegBranch']:
             Pflowinit[i, j, p] = -sum(
@@ -2651,7 +2667,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
                  dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d])) / dictionary_['Tapinit'][j, i, p] for
-                d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
+                d in Phases if (i, j, d) in BranchPhase and ((i, p), (j, d)) in dictionary_['G'])
 
             Qflowinit[i, j, p] = -sum(
                 (-dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
@@ -2663,7 +2679,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][i, d]) -
                  dictionary_['G'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][i, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][i, d])) / dictionary_['Tapinit'][j, i, p] for
-                d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
+                d in Phases if (i, j, d) in BranchPhase and ((i, p), (j, d)) in dictionary_['G'])
         else:
             Pflowinit[i, j, p] = -sum(
                 (dictionary_['G'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][i, d] *
@@ -2674,7 +2690,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
                  dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]))
-                for d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
+                for d in Phases if (i, j, d) in BranchPhase and ((i, p), (j, d)) in dictionary_['G'])
 
             Qflowinit[i, j, p] = -sum(
                 (-dictionary_['B'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][i, d] *
@@ -2685,7 +2701,7 @@ def __define_power_flow_init(dictionary_, model):
                  math.cos(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]) -
                  dictionary_['G'][(i, p), (j, d)] * dictionary_['Vminit'][i, p] * dictionary_['Vminit'][j, d] *
                  math.sin(dictionary_['Vainit'][i, p] - dictionary_['Vainit'][j, d]))
-                for d in Phases if (i, j, d) in BranchPhase and (i, p, j, d) in dictionary_['G'])
+                for d in Phases if (i, j, d) in BranchPhase and ((i, p), (j, d)) in dictionary_['G'])
     return Pflowinit, Qflowinit
 
 
@@ -2742,6 +2758,7 @@ model.Qpv = pyo.Var(model.BusPhase, initialize=dictionary_['Qpv'])
 
 # model.Pflowinit.pprint()
 #
+print('Pflowinit')
 for key, value in Pflowinit.items():
     print(key, ":", value)
 
